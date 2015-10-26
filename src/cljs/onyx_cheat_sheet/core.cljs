@@ -285,7 +285,7 @@
                      :optional? false}
     :aggregation/super-aggregation-fn {:doc "Fn (state-1, state-2, window) to combine two states in the case of two windows being merged, e.g. session windows."
                                        :type :function
-                                       :optional? false}
+                                       :optional? true}
     :aggregation/apply-state-update {:doc "Fn (state, entry) to apply state machine update entry to a state."
                                      :type :function
                                      :optional? false}}
