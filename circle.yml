@@ -2,7 +2,6 @@ test:
   override:
           - lein with-profile -dev,+uberjar uberjar
           - cp resources/public/js/app.js resources/public/css/style.css $CIRCLE_ARTIFACTS
-        timeout: 480
 
 machine:
   java:
