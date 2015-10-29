@@ -14,6 +14,8 @@
                  [ring/ring-defaults "0.1.4"]
                  [compojure "1.4.0"]
                  [enlive "1.1.6"]
+                 [org.onyxplatform/onyx "0.8.0-SNAPSHOT"]
+                 [markdown-clj "0.9.77"]
                  [org.omcljs/om "0.9.0"]
                  [racehub/om-bootstrap "0.5.3"]
                  [fipp "0.6.2"]
