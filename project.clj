@@ -12,6 +12,7 @@
                  [org.clojure/clojurescript "1.7.48"]
                  [ring "1.3.2"]
                  [ring/ring-defaults "0.1.4"]
+                 [secretary "1.2.3"]
                  [compojure "1.4.0"]
                  [enlive "1.1.6"]
                  [org.onyxplatform/onyx "0.8.0-SNAPSHOT"]
@@ -32,7 +33,6 @@
                              :compiler {:output-to     "resources/public/js/app.js"
                                         :output-dir    "resources/public/js/out"
                                         :source-map    "resources/public/js/out.js.map"
-                                        :preamble      ["react/react.min.js"]
                                         :optimizations :none
                                         :pretty-print  true}}}}
 
@@ -62,7 +62,6 @@
                                                :compiler {:output-to     "resources/public/js/app_test.js"
                                                           :output-dir    "resources/public/js/test"
                                                           :source-map    "resources/public/js/test.js.map"
-                                                          :preamble      ["react/react.min.js"]
                                                           :optimizations :whitespace
                                                           :pretty-print  false}}}}}
 
