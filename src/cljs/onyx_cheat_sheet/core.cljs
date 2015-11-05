@@ -155,7 +155,7 @@
    {}
    [(dom/h4 #js {:className "key-set"} "Keys")
     (for [k (model-display-order section)]
-      [(dom/code #js {:className "code-example"} (dom/a #js {:href (str "/#" (name section) "/" (keyword-sanitize-? k))} (str k)))
+      [(dom/code #js {:className "code-example"} (dom/a #js {:href (str "#" (name section) "/" (keyword-sanitize-? k))} (str k)))
        (dom/p {})])]))
 
 (defn pretty-edn [input]
