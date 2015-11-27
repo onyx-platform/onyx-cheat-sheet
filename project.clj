@@ -1,4 +1,4 @@
-(defproject onyx-cheat-sheet "0.1.0-SNAPSHOT"
+(defproject onyx-cheat-sheet "0.8.2"
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
@@ -15,7 +15,7 @@
                  [secretary "1.2.3"]
                  [compojure "1.4.0"]
                  [enlive "1.1.6"]
-                 [org.onyxplatform/onyx "0.8.0-SNAPSHOT"]
+                 [org.onyxplatform/onyx "0.8.2"]
                  [markdown-clj "0.9.77"]
                  [org.omcljs/om "0.9.0"]
                  [racehub/om-bootstrap "0.5.3"]
