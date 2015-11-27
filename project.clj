@@ -28,6 +28,8 @@
   :min-lein-version "2.5.0"
 
   :uberjar-name "onyx-cheat-sheet.jar"
+  
+  :jvm-opts ["-Xmx4g" "-XX:-OmitStackTraceInFastThrow"]
 
   :cljsbuild {:builds {:app {:source-paths ["src/cljs"]
                              :compiler {:output-to     "resources/public/js/app.js"
