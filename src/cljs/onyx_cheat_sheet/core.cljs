@@ -89,6 +89,11 @@
        (for [c choices]
          (r/badge {:class "onyx-badge"} (pr-str c)))])))
 
+(defn added [section k]
+  (when-let [added (get-in model [section :model k :added])]
+    [(dom/strong #js {:className "inline-header"} "added")
+     (r/badge {:class "onyx-badge"} added)]))
+
 (defn unit [section k]
   (when-let [unit (get-in model [section :model k :unit])]
     [(dom/strong #js {:className "inline-header"} "unit")
@@ -148,6 +153,8 @@
             (default-value section k)
             (dom/p {})
             (choices section k)
+            (dom/p {})
+            (added section k)
             (dom/p {})))))
 
 (defn feature-options [usage section]
