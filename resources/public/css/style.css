@@ -60,3 +60,7 @@ body {
 .feature-choose {
   opacity: 0.30;
 }
+
+#cheat-sheet-block {
+  margin-top: 25px;
+}
