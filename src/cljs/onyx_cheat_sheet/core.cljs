@@ -195,11 +195,6 @@
            (g/grid
             {}
             (g/row
-             {:class "cheat-sheet-header"}
-             (g/col
-              {:xs 18 :md 12}
-              (dom/h2 #js {:id "page-title" :onClick (fn [e] (swap! app-state dissoc :view))} "Onyx Cheat Sheet")))
-            (g/row
              {}
              (g/col
               {:xs 18 :md 3}
