@@ -195,7 +195,7 @@
            (g/grid
             {}
             (g/row
-             {}
+             {:id "cheat-sheet-block"}
              (g/col
               {:xs 18 :md 3}
               (r/well
