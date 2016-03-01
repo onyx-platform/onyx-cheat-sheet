@@ -260,7 +260,7 @@
   "Grab the input element via the `input` reference."
   [owner data]
   (let [node (om/get-node owner "input")]
-    (om/update! data :view (keys model) (.-value node))
+    (om/update! data :view (keys model))
     (om/update! data :search (.-value node))))
 
 (defcomponent example-input [data owner]
