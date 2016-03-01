@@ -223,8 +223,8 @@
                                 {:id "summary" :bs-style "primary" :class "summary-doc" :header (dom/h3 nil (str (model-names section) " Summary"))}
                                 (get-in model [section :summary])))] 
                            (for [k (model-display-order section)]
-                             (if (get-in model [section :model k]) 
-                               (om/build display-feature {:section section :key k}))))))))
+                             (dom/div (if (get-in model [section :model k]) #js {} #js {:style #js {:display "none"}})
+                                      (om/build display-feature {:section section :key k}))))))))
 
 (defcomponent feature-options [{:keys [model section]} owner]
   (render [_]
