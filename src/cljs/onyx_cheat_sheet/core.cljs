@@ -11,6 +11,7 @@
 	    [om-tools.dom :include-macros true]
 	    [onyx.information-model :refer [model model-display-order]]
 	    [markdown.core]
+            [clojure.string]
 	    [fipp.edn :refer [pprint]]
 	    [secretary.core :as secretary :refer-macros [defroute]]
 	    [goog.events :as events]
@@ -51,6 +52,8 @@
   (goog.events/listen h EventType/NAVIGATE #(secretary/dispatch! (.-token %)))
   (doto h (.setEnabled true)))
 
+;;; SEARCH CODE ;;;
+;;;
 (defn flatten-anything [coll]
   (cond (or (sequential? coll)
             (set? coll))
@@ -61,20 +64,36 @@
         :else
         [coll]))
 
-(defn filter-sub-model [sub-model substring]
+(defn stringize-sub-model [sub-model]
   (->> sub-model
-       (filter (fn [kv]
-                 (if (some #(re-find (re-pattern substring) %) (map str (flatten-anything kv)))
-                   kv)))
+       (map (fn [kv]
+                (vector (first kv) (clojure.string/lower-case (clojure.string/join " " (flatten-anything kv))))))
        (into {})))
+
+(defn stringize [model]
+  (reduce (fn [m k]
+            (update-in m [k :model] stringize-sub-model))
+          model
+          (keys model)))
+
+(def stringized (stringize model))
+
+(defn filter-sub-model [sub-model model sub-key substring]
+  (let [stringized-sub (get stringized sub-key)]
+    (->> sub-model
+         (filter (fn [[k v]]
+                   (if (re-find (re-pattern substring)
+                                (get-in stringized-sub [:model k]))
+                     [k v])))
+         (into {}))))
 
 (defn filter-model [model substring]
   (if (empty? substring)
     model
     (reduce (fn [m k]
-              (update-in m [k :model] filter-sub-model substring))
-            model
-            (keys model))))
+	      (update-in m [k :model] filter-sub-model model k substring))
+	    model
+	    (keys model))))
 
 (def examples
   {:catalog-entry
@@ -168,6 +187,33 @@
   (keyword (clojure.string/replace (namespace k) #"\?" "-QMARK")
            (clojure.string/replace (name k) #"\?" "-QMARK")))
 
+(defcomponent display-feature [{k :key section :section}]
+  (render [_]
+          (p/panel
+            {:key (name k)
+             :id (str (keyword-sanitize-? k))}
+            (dom/pre #js {:className "key-header"}
+                     (str k)
+                     (requirements section k))
+            (r/well {:class "entry-doc"} (codify (get-in model [section :model k :doc])))
+            (restrictions model section k)
+            (dom/p {})
+            (required-when section k)
+            (dom/p {})
+            (optionally-allowed-when section k)
+
+            (allowed-types section k)
+            (dom/p {})
+
+            (unit section k)
+            (dom/p {})
+            (default-value section k)
+            (dom/p {})
+            (choices section k)
+            (dom/p {})
+            (added section k)
+            (dom/p {}))))
+
 (defcomponent feature-view [{:keys [model sections]} owner]
   (render [_]
           (dom/div {}
@@ -177,31 +223,8 @@
                                 {:id "summary" :bs-style "primary" :class "summary-doc" :header (dom/h3 nil (str (model-names section) " Summary"))}
                                 (get-in model [section :summary])))] 
                            (for [k (model-display-order section)]
-                             ;; If not filtered
                              (if (get-in model [section :model k]) 
-                               (p/panel
-                                 {:id (str (keyword-sanitize-? k))}
-                                 (dom/pre #js {:className "key-header"}
-                                          (str k)
-                                          (requirements section k))
-                                 (r/well {:class "entry-doc"} (codify (get-in model [section :model k :doc])))
-                                 (restrictions model section k)
-                                 (dom/p {})
-                                 (required-when section k)
-                                 (dom/p {})
-                                 (optionally-allowed-when section k)
-
-                                 (allowed-types section k)
-                                 (dom/p {})
-
-                                 (unit section k)
-                                 (dom/p {})
-                                 (default-value section k)
-                                 (dom/p {})
-                                 (choices section k)
-                                 (dom/p {})
-                                 (added section k)
-                                 (dom/p {})))))))))
+                               (om/build display-feature {:section section :key k}))))))))
 
 (defcomponent feature-options [{:keys [model section]} owner]
   (render [_]
