@@ -1,18 +1,31 @@
 (ns onyx-cheat-sheet.core
   (:require [om.core :as om :include-macros true]
-            [om.dom :as dom :include-macros true]
-            [om-bootstrap.panel :as p]
-            [om-bootstrap.button :as b]
-            [om-bootstrap.random :as r]
-            [om-bootstrap.nav :as n]
-            [om-bootstrap.grid :as g]
-            [onyx.information-model :refer [model model-display-order]]
-            [markdown.core]
-            [fipp.edn :refer [pprint]]
-            [secretary.core :as secretary :refer-macros [defroute]]
-            [goog.events :as events]
-            [goog.history.EventType :as EventType])
-  (:import goog.History))
+	    [om.dom :as dom :include-macros true]
+	    [om-bootstrap.panel :as p]
+	    [om-bootstrap.button :as b]
+	    [om-bootstrap.random :as r]
+	    [om-bootstrap.nav :as n]
+	    [om-bootstrap.grid :as g]
+	    [om-bootstrap.input :as i]
+	    [om-tools.core :refer-macros [defcomponent]]
+	    [om-tools.dom :include-macros true]
+	    [onyx.information-model :refer [model model-display-order]]
+	    [markdown.core]
+	    [fipp.edn :refer [pprint]]
+	    [secretary.core :as secretary :refer-macros [defroute]]
+	    [goog.events :as events]
+	    [goog.history.EventType :as EventType])
+(:import goog.History))
+
+(def model-names {:catalog-entry "Catalogs"
+                  :flow-conditions-entry "Flow Conditions"
+                  :lifecycle-entry "Lifecycles"
+                  :lifecycle-calls "Lifecycle Calls"
+                  :window-entry "Windows"
+                  :state-aggregation "State / Aggregation"
+                  :trigger-entry "Triggers"
+                  :peer-config "Peer Configuration"
+                  :env-config "Environment Configuration"})
 
 (defonce app-state (atom {}))
 
@@ -22,10 +35,12 @@
   (swap! app-state assoc :view nil))
 
 (defroute calls-path "/:calls" [calls]
-  (swap! app-state assoc :view (keyword calls)))
+  (swap! app-state assoc :view (if (= "all" calls)
+				 (keys model)
+				 [(keyword calls)])))
 
 (defroute calls-jump "/:calls/:namespace/:name" [calls namespace name]
-  (swap! app-state assoc :view (keyword calls))
+  (swap! app-state assoc :view [(keyword calls)])
   ;; Super hacky way to jump to the correct entry
   (.setTimeout js/window 
                #(let [element (.getElementById js/document (str namespace "/" name))]
@@ -35,6 +50,31 @@
 (let [h (History.)]
   (goog.events/listen h EventType/NAVIGATE #(secretary/dispatch! (.-token %)))
   (doto h (.setEnabled true)))
+
+(defn flatten-anything [coll]
+  (cond (or (sequential? coll)
+            (set? coll))
+        (mapcat flatten-anything coll)
+        (map? coll)
+        (into (mapcat flatten-anything (keys coll))
+              (mapcat flatten-anything (vals coll)))
+        :else
+        [coll]))
+
+(defn filter-sub-model [sub-model substring]
+  (->> sub-model
+       (filter (fn [kv]
+                 (if (some #(re-find (re-pattern substring) %) (map str (flatten-anything kv)))
+                   kv)))
+       (into {})))
+
+(defn filter-model [model substring]
+  (if (empty? substring)
+    model
+    (reduce (fn [m k]
+              (update-in m [k :model] filter-sub-model substring))
+            model
+            (keys model))))
 
 (def examples
   {:catalog-entry
@@ -128,42 +168,50 @@
   (keyword (clojure.string/replace (namespace k) #"\?" "-QMARK")
            (clojure.string/replace (name k) #"\?" "-QMARK")))
 
-(defn feature-view [section]
-  (into [(p/panel 
-           {:id "summary" :bs-style "primary" :class "summary-doc" :header (dom/h3 nil "Summary")}
-           (get-in model [section :summary]))] 
-        (for [k (model-display-order section)]
-          (p/panel
-            {:id (str (keyword-sanitize-? k))}
-            (dom/pre #js {:className "key-header"}
-                     (str k)
-                     (requirements section k))
-            (r/well {:class "entry-doc"} (codify (get-in model [section :model k :doc])))
-            (restrictions model section k)
-            (dom/p {})
-            (required-when section k)
-            (dom/p {})
-            (optionally-allowed-when section k)
+(defcomponent feature-view [{:keys [model sections]} owner]
+  (render [_]
+          (dom/div {}
+                   (for [section sections] 
+                     (into [(if-not (empty? (get-in model [section :model])) 
+                              (p/panel 
+                                {:id "summary" :bs-style "primary" :class "summary-doc" :header (dom/h3 nil (str (model-names section) " Summary"))}
+                                (get-in model [section :summary])))] 
+                           (for [k (model-display-order section)]
+                             ;; If not filtered
+                             (if (get-in model [section :model k]) 
+                               (p/panel
+                                 {:id (str (keyword-sanitize-? k))}
+                                 (dom/pre #js {:className "key-header"}
+                                          (str k)
+                                          (requirements section k))
+                                 (r/well {:class "entry-doc"} (codify (get-in model [section :model k :doc])))
+                                 (restrictions model section k)
+                                 (dom/p {})
+                                 (required-when section k)
+                                 (dom/p {})
+                                 (optionally-allowed-when section k)
 
-            (allowed-types section k)
-            (dom/p {})
+                                 (allowed-types section k)
+                                 (dom/p {})
 
-            (unit section k)
-            (dom/p {})
-            (default-value section k)
-            (dom/p {})
-            (choices section k)
-            (dom/p {})
-            (added section k)
-            (dom/p {})))))
+                                 (unit section k)
+                                 (dom/p {})
+                                 (default-value section k)
+                                 (dom/p {})
+                                 (choices section k)
+                                 (dom/p {})
+                                 (added section k)
+                                 (dom/p {})))))))))
 
-(defn feature-options [usage section]
-  (r/well
-   {}
-   [(dom/h4 #js {:className "key-set"} "Keys")
-    (for [k (model-display-order section)]
-      [(dom/code #js {:className "code-example"} (dom/a #js {:href (str "#" (name section) "/" (keyword-sanitize-? k))} (str k)))
-       (dom/p {})])]))
+(defcomponent feature-options [{:keys [model section]} owner]
+  (render [_]
+          (r/well
+            {}
+            [(dom/h4 #js {:className "key-set"} "Keys")
+             (for [k (model-display-order section)]
+               [(dom/code #js {:className "code-example"} 
+                          (dom/a #js {:href (str "#" (name section) "/" (keyword-sanitize-? k))} (str k)))
+                (dom/p {})])])))
 
 (defn pretty-edn [input]
   (clojure.string/replace (with-out-str (pprint input {:width 10})) #"\}\n\s\{" "}\n\n {"))
@@ -185,44 +233,70 @@
 (defn catalog-entry-examples-options []
   (feature-options examples :catalog-entry))
 
+(defn handle-change
+  "Grab the input element via the `input` reference."
+  [owner data]
+  (let [node (om/get-node owner "input")]
+    (om/update! data :view (keys model) (.-value node))
+    (om/update! data :search (.-value node))))
+
+(defcomponent example-input [data owner]
+  (render [_]
+          (i/input
+           {:feedback? true
+            :type "text"
+            :value (:search data)
+            :label "Search"
+            :placeholder ""
+            :group-classname "group-class"
+            :wrapper-classname "wrapper-class"
+            :label-classname "label-class"
+            :on-change #(handle-change owner data)})))
+
+(defn build-nav-item [model k name-str]
+  (if-not (empty? (get-in model [k :model]))
+    (n/nav-item {:key (name k) :href (str "#/" (name k)) :on-click #(swap! app-state assoc :view [k])} name-str)))
+
 (defn main []
   (om/root
    (fn [app owner]
      (reify
        om/IRender
        (render [_]
-         (let [view (:view @app-state)]
+         (let [search (:search app)
+               view (:view app)
+               filtered-model (filter-model model search)]
            (g/grid
             {}
+            
             (g/row
-             {:id "cheat-sheet-block"}
-             (g/col
-              {:xs 18 :md 3}
-              (r/well
-               {}
-               (n/nav
-                {:collapsible? true :stacked? true :bs-style "pills"}
-                (dom/h4 #js {:className "section-set"} "Sections")
-                (n/nav-item {:key 1 :href "#/catalog-entry" :on-click #(swap! app-state assoc :view :catalog-entry)} "Catalogs")
-                (n/nav-item {:key 2 :href "#/flow-conditions-entry" :on-click #(swap! app-state assoc :view :flow-conditions-entry)} "Flow Conditions")
-                (n/nav-item {:key 3 :href "#/lifecycle-entry" :on-click #(swap! app-state assoc :view :lifecycle-entry)} "Lifecycles")
-                (n/nav-item {:key 4 :href "#/lifecycle-calls" :on-click #(swap! app-state assoc :view :lifecycle-calls)} "Lifecycle Calls")
-                (n/nav-item {:key 5 :href "#/window-entry" :on-click #(swap! app-state assoc :view :window-entry)} "Windows")
-                (n/nav-item {:key 6 :href "#/state-aggregation" :on-click #(swap! app-state assoc :view :state-aggregation)} "State / Aggregation")
-                (n/nav-item {:key 7 :href "#/trigger-entry" :on-click #(swap! app-state assoc :view :trigger-entry)} "Triggers")
-                (n/nav-item {:key 8 :href "#/peer-config" :on-click #(swap! app-state assoc :view :peer-config)} "Peer Configuration")
-                (n/nav-item {:key 9 :href "#/env-config" :on-click #(swap! app-state assoc :view :env-config)} "Environment Configuration"))))
-             (g/col
-              {:xs 18 :md 6}
-              (if view 
-                (feature-view view)
-                (dom/div
-                  #js {:id "logo-container"}
-                  (dom/img #js {:src "https://raw.githubusercontent.com/onyx-platform/onyx/3bf02e6fafe41315e0302f0f525992eb76eca04e/resources/logo/high-res.png" :className "full-logo"})
-                  (dom/h3 #js {:className "feature-choose"} "<< Choose a feature"))))
-             (if view 
-               (g/col
-                 {:xs 18 :md 3}
-                 (feature-options model view)))))))))
+              {:id "cheat-sheet-block"}
+              (g/col
+                {:xs 18 :md 3}
+                (r/well
+                  {}
+                  (n/nav
+                    {:collapsible? true :stacked? true :bs-style "pills"}
+                    (dom/h4 #js {:className "section-set"} "Sections")
+                    (cons (n/nav-item {:key "all" :href "#/all" :on-click #(swap! app-state assoc :view (keys model))} "All")
+                          (keep (fn [[k name]]
+                                  (build-nav-item filtered-model k name)) 
+                                model-names)))))
+
+              (g/col
+                {:xs 18 :md 6}
+                (if view 
+                  (om/build feature-view {:model filtered-model :sections view})
+                  (dom/div
+                    #js {:id "logo-container"}
+                    (dom/img #js {:src "https://raw.githubusercontent.com/onyx-platform/onyx/3bf02e6fafe41315e0302f0f525992eb76eca04e/resources/logo/high-res.png" :className "full-logo"})
+                    (dom/h3 #js {:className "feature-choose"} "<< Choose a feature"))))
+              (g/col {:id "search-bar"}
+                     (g/col {:xs 18 :md 3}
+                            (om/build example-input app)))
+              (if (= 1 (count view)) 
+                (g/col
+                  {:xs 18 :md 3}
+                  (om/build feature-options {:model model :section (first view)})))))))))
    app-state
    {:target (. js/document (getElementById "app"))}))
