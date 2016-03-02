@@ -264,18 +264,18 @@
       (om/update! data :view (keys model))
       (om/update! data :search (.-value node)))))
 
-(defcomponent example-input [data owner]
+(defcomponent search-input [data owner]
   (render [_]
           (i/input
-           {:feedback? true
-            :type "text"
-            :value (:search data)
-            :label "Search"
-            :placeholder ""
-            :group-classname "group-class"
-            :wrapper-classname "wrapper-class"
-            :label-classname "label-class"
-            :on-change #(handle-change owner data)})))
+            {:feedback? true
+             :type "text"
+             :value (:search data)
+             :label "Search"
+             :placeholder ""
+             ;:group-classname "group-class"
+             ;:wrapper-classname "wrapper-class"
+             ;:label-classname "label-class"
+             :on-change #(handle-change owner data)})))
 
 (defn build-nav-item [model k name-str]
   (if-not (empty? (get-in model [k :model]))
@@ -317,7 +317,7 @@
                     (dom/h3 #js {:className "feature-choose"} "<< Choose a feature"))))
               (g/col {:id "search-bar"}
                      (g/col {:xs 18 :md 3}
-                            (om/build example-input app)))
+                            (om/build search-input app)))
               (if (= 1 (count view)) 
                 (g/col
                   {:xs 18 :md 3}

@@ -8,22 +8,22 @@
 
   :test-paths ["test/clj"]
 
-  :dependencies [[org.clojure/clojure "1.7.0"]
-		 [org.clojure/clojurescript "1.7.48"]
+  :dependencies [[org.clojure/clojure "1.8.0"]
+		 [org.clojure/clojurescript "1.7.228"]
 		 [ring "1.3.2"]
 		 [ring/ring-defaults "0.1.4"]
 		 [secretary "1.2.3"]
 		 [compojure "1.4.0"]
 		 [enlive "1.1.6"]
 		 [org.onyxplatform/onyx "0.8.11"]
-		 [prismatic/om-tools "0.3.12"]
+		 [prismatic/om-tools "0.4.0"]
 		 [markdown-clj "0.9.77"]
 		 [org.omcljs/om "0.9.0"]
-		 [racehub/om-bootstrap "0.5.3"]
+		 [racehub/om-bootstrap "0.6.1"]
 		 [fipp "0.6.2"]
 		 [environ "1.0.0"]]
 
-  :plugins [[lein-cljsbuild "1.0.5"]
+  :plugins [[lein-cljsbuild "1.1.2"]
             [lein-environ "1.0.0"]]
 
   :min-lein-version "2.5.0"
@@ -33,24 +33,26 @@
   :jvm-opts ["-Xmx4g" "-XX:-OmitStackTraceInFastThrow"]
 
   :cljsbuild {:builds {:app {:source-paths ["src/cljs"]
-                             :compiler {:output-to     "resources/public/js/app.js"
+                             :compiler {:main onyx-cheat-sheet.main
+                                        :output-to     "resources/public/js/app.js"
+                                        :asset-path  "public/js/out"
                                         :output-dir    "resources/public/js/out"
-                                        :source-map    "resources/public/js/out.js.map"
+                                        :source-map    "resources/public/js/app.js.map"
                                         :optimizations :none
                                         :pretty-print  true}}}}
 
   :profiles {:dev {:source-paths ["env/dev/clj"]
                    :test-paths ["test/clj"]
 
-                   :dependencies [[figwheel "0.2.5"]
-                                  [figwheel-sidecar "0.2.5"]
-                                  [com.cemerick/piggieback "0.1.5"]
-                                  [weasel "0.6.0"]]
+                   :dependencies [[figwheel "0.5.0-6"]
+                                  [figwheel-sidecar "0.5.0-6"]
+                                  [com.cemerick/piggieback "0.2.1"]
+                                  [weasel "0.7.0"]]
 
                    :repl-options {:init-ns onyx-cheat-sheet.server
                                   :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
 
-                   :plugins [[lein-figwheel "0.2.5"]]
+                   :plugins [[lein-figwheel "0.5.0-6"]]
 
                    :figwheel {:http-server-root "public"
                               :server-port 3449
@@ -64,7 +66,7 @@
                                         :test {:source-paths ["src/cljs" "test/cljs"]
                                                :compiler {:output-to     "resources/public/js/app_test.js"
                                                           :output-dir    "resources/public/js/test"
-                                                          :source-map    "resources/public/js/test.js.map"
+                                                          :source-map    true
                                                           :optimizations :whitespace
                                                           :pretty-print  false}}}}}
 
@@ -77,5 +79,7 @@
                        :cljsbuild {:builds {:app
                                             {:source-paths ["env/prod/cljs"]
                                              :compiler
-                                             {:optimizations :whitespace
+                                             {:optimizations :advanced
+                                              :main onyx-cheat-sheet.main
+                                              :source-map "resources/public/js/app.js.map"
                                               :pretty-print false}}}}}})
