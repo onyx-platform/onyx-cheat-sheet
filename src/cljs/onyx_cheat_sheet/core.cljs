@@ -279,7 +279,7 @@
 
 (defn build-nav-item [model k name-str]
   (if-not (empty? (get-in model [k :model]))
-    (n/nav-item {:key (name k) :href (str "#/" (name k)) :on-click #(swap! app-state assoc :view [k])} name-str)))
+    (n/nav-item {:key (name k) :href (str "#/" (name k)) :on-click #(swap! app-state assoc :view [k] :search "")} name-str)))
 
 (defn main []
   (om/root
