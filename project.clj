@@ -79,7 +79,7 @@
                        :cljsbuild {:builds {:app
                                             {:source-paths ["env/prod/cljs"]
                                              :compiler
-                                             {:optimizations :advanced
+                                             {:optimizations :whitespace
                                               :main onyx-cheat-sheet.main
                                               :source-map "resources/public/js/app.js.map"
                                               :pretty-print false}}}}}})
