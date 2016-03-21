@@ -25,6 +25,8 @@
                   :window-entry "Windows"
                   :state-aggregation "State / Aggregation"
                   :trigger-entry "Triggers"
+                  :state-event "State Event"
+                  :event-map "Event Map"
                   :peer-config "Peer Configuration"
                   :env-config "Environment Configuration"})
 
@@ -184,8 +186,10 @@
                 (dom/li {} (codify c)))])))
 
 (defn keyword-sanitize-? [k]
-  (keyword (clojure.string/replace (namespace k) #"\?" "-QMARK")
-           (clojure.string/replace (name k) #"\?" "-QMARK")))
+  (if (namespace k)
+    (keyword (clojure.string/replace (namespace k) #"\?" "-QMARK")
+             (clojure.string/replace (name k) #"\?" "-QMARK")) 
+    (keyword (clojure.string/replace (name k) #"\?" "-QMARK"))))
 
 (defcomponent display-feature [{k :key section :section}]
   (render [_]
