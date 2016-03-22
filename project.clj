@@ -16,7 +16,7 @@
 		 [compojure "1.4.0"]
 		 [enlive "1.1.6"]
                  ^{:voom {:repo "git@github.com:onyx-platform/onyx.git" :branch "master"}}
-		 [org.onyxplatform/onyx "0.9.0-SNAPSHOT"]
+		 [org.onyxplatform/onyx "0.9.0-beta2"]
 		 [prismatic/om-tools "0.4.0"]
 		 [markdown-clj "0.9.77"]
 		 [org.omcljs/om "0.9.0"]
@@ -53,7 +53,8 @@
                    :repl-options {:init-ns onyx-cheat-sheet.server
                                   :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
 
-                   :plugins [[lein-figwheel "0.5.0-6"]]
+                   :plugins [[lein-figwheel "0.5.0-6"]
+                             [lein-update-dependency "0.1.2"]]
 
                    :figwheel {:http-server-root "public"
                               :server-port 3449
