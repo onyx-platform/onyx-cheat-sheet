@@ -1,6 +1,6 @@
-(defproject onyx-cheat-sheet "0.9.0-SNAPSHOT"
-  :description "FIXME: write description"
-  :url "http://example.com/FIXME"
+(defproject onyx-cheat-sheet "0.9.5.0-SNAPSHOT"
+  :description "Cheat sheet for Onyx"
+  :url "https://github.com/onyx-platform/onyx-cheat-sheet"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
@@ -9,20 +9,20 @@
   :test-paths ["test/clj"]
 
   :dependencies [[org.clojure/clojure "1.8.0"]
-		 [org.clojure/clojurescript "1.7.228"]
-		 [ring "1.3.2"]
-		 [ring/ring-defaults "0.1.4"]
-		 [secretary "1.2.3"]
-		 [compojure "1.4.0"]
-		 [enlive "1.1.6"]
+                 [org.clojure/clojurescript "1.7.228"]
+                 [ring "1.3.2"]
+                 [ring/ring-defaults "0.1.4"]
+                 [secretary "1.2.3"]
+                 [compojure "1.4.0"]
+                 [enlive "1.1.6"]
                  ^{:voom {:repo "git@github.com:onyx-platform/onyx.git" :branch "master"}}
-		 [org.onyxplatform/onyx "0.9.0-beta2"]
-		 [prismatic/om-tools "0.4.0"]
-		 [markdown-clj "0.9.77"]
-		 [org.omcljs/om "0.9.0"]
-		 [racehub/om-bootstrap "0.6.1"]
-		 [fipp "0.6.2"]
-		 [environ "1.0.0"]]
+                 [org.onyxplatform/onyx "0.9.4"]
+                 [prismatic/om-tools "0.4.0"]
+                 [markdown-clj "0.9.77"]
+                 [org.omcljs/om "0.9.0"]
+                 [racehub/om-bootstrap "0.6.1"]
+                 [fipp "0.6.2"]
+                 [environ "1.0.0"]]
 
   :plugins [[lein-cljsbuild "1.1.2"]
             [lein-environ "1.0.0"]]
@@ -54,6 +54,8 @@
                                   :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
 
                    :plugins [[lein-figwheel "0.5.0-6"]
+                             [lein-pprint "1.1.1"]
+                             [lein-set-version "0.4.1"]
                              [lein-update-dependency "0.1.2"]]
 
                    :figwheel {:http-server-root "public"
