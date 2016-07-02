@@ -1,4 +1,4 @@
-(defproject onyx-cheat-sheet "0.9.7.0-alpha18"
+(defproject onyx-cheat-sheet "0.9.7.0-SNAPSHOT"
   :description "Cheat sheet for Onyx"
   :url "https://github.com/onyx-platform/onyx-cheat-sheet"
   :license {:name "Eclipse Public License"
