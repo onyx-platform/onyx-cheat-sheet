@@ -185,6 +185,18 @@
               (for [c conditions]
                 (dom/li {} (codify c)))])))
 
+(defn deprecated-version [section k]
+  (when-let [deprecated-version (get-in model [section :model k :deprecated-version])]
+    (r/alert {:bs-style "warning"}
+             [(dom/h5 {} "Deprecated Version")
+              deprecated-version])))
+
+(defn deprecated-doc [section k]
+  (when-let [deprecation-doc (get-in model [section :model k :deprecated-doc])]
+    (r/alert {:bs-style "danger"}
+             [(dom/h5 {} "Deprecation Doc")
+              deprecation-doc])))
+
 (defn keyword-sanitize-? [k]
   (if (namespace k)
     (keyword (clojure.string/replace (namespace k) #"\?" "-QMARK")
@@ -193,30 +205,35 @@
 
 (defcomponent display-feature [{k :key section :section}]
   (render [_]
-          (p/panel
-            {:key (name k)
-             :id (str (keyword-sanitize-? k))}
-            (dom/pre #js {:className "key-header"}
-                     (str k)
-                     (requirements section k))
-            (r/well {:class "entry-doc"} (codify (get-in model [section :model k :doc])))
-            (restrictions model section k)
-            (dom/p {})
-            (required-when section k)
-            (dom/p {})
-            (optionally-allowed-when section k)
+          (let [deprecated? (boolean (get-in model [section :model k :deprecated-version]))] 
+            (p/panel
+              {:key (name k)
+               :id (str (keyword-sanitize-? k))}
+              (dom/pre #js {:className "key-header"}
+                       (str k)
+                       (if deprecated? 
+                         (r/badge {:class "deprecated-badge onyx-badge"} "deprecated"))
+                       (requirements section k))
+              (deprecated-version section k)
+              (deprecated-doc section k)
+              (r/well {:class "entry-doc"} (codify (get-in model [section :model k :doc])))
+              (restrictions model section k)
+              (dom/p {})
+              (required-when section k)
+              (dom/p {})
+              (optionally-allowed-when section k)
 
-            (allowed-types section k)
-            (dom/p {})
+              (allowed-types section k)
+              (dom/p {})
 
-            (unit section k)
+              (unit section k)
             (dom/p {})
             (default-value section k)
             (dom/p {})
             (choices section k)
             (dom/p {})
             (added section k)
-            (dom/p {}))))
+            (dom/p {})))))
 
 (defcomponent feature-view [{:keys [model sections]} owner]
   (render [_]
