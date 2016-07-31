@@ -185,17 +185,12 @@
               (for [c conditions]
                 (dom/li {} (codify c)))])))
 
-(defn deprecated-version [section k]
+(defn deprecated [section k]
   (when-let [deprecated-version (get-in model [section :model k :deprecated-version])]
     (r/alert {:bs-style "danger"}
-             [(dom/h5 {} "Deprecated Version")
-              deprecated-version])))
-
-(defn deprecated-doc [section k]
-  (when-let [deprecation-doc (get-in model [section :model k :deprecation-doc])]
-    (r/alert {:bs-style "danger"}
-             [(dom/h5 {} "Deprecation Doc")
-              deprecation-doc])))
+             [(dom/h5 {} "Deprecated")
+              (dom/p {} deprecated-version)
+              (dom/p {} (get-in model [section :model k :deprecation-doc]))])))
 
 (defn keyword-sanitize-? [k]
   (if (namespace k)
@@ -214,8 +209,7 @@
                        (if deprecated? 
                          (r/badge {:class "deprecated-badge onyx-badge"} "deprecated"))
                        (requirements section k))
-              (deprecated-version section k)
-              (deprecated-doc section k)
+              (deprecated section k)
               (r/well {:class "entry-doc"} (codify (get-in model [section :model k :doc])))
               (restrictions model section k)
               (dom/p {})
