@@ -193,7 +193,6 @@
                      (dom/b {} "Version: ")
                      deprecated-version)
               (dom/p {} 
-                     (dom/b {} "Documentation: ")
                      (codify (get-in model [section :model k :deprecation-doc])))])))
 
 (defn keyword-sanitize-? [k]
