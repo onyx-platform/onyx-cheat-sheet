@@ -189,8 +189,12 @@
   (when-let [deprecated-version (get-in model [section :model k :deprecated-version])]
     (r/alert {:bs-style "danger"}
              [(dom/h5 {} "Deprecated")
-              (dom/p {} deprecated-version)
-              (dom/p {} (get-in model [section :model k :deprecation-doc]))])))
+              (dom/p {} 
+                     (dom/b {} "Version")
+                     deprecated-version)
+              (dom/p {} 
+                     (dom/b {} "Documentation:")
+                     (get-in model [section :model k :deprecation-doc]))])))
 
 (defn keyword-sanitize-? [k]
   (if (namespace k)
