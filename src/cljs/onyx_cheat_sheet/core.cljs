@@ -190,11 +190,11 @@
     (r/alert {:bs-style "danger"}
              [(dom/h5 {} "Deprecated")
               (dom/p {} 
-                     (dom/b {} "Version")
+                     (dom/b {} "Version: ")
                      deprecated-version)
               (dom/p {} 
-                     (dom/b {} "Documentation:")
-                     (get-in model [section :model k :deprecation-doc]))])))
+                     (dom/b {} "Documentation: ")
+                     (codify (get-in model [section :model k :deprecation-doc])))])))
 
 (defn keyword-sanitize-? [k]
   (if (namespace k)
