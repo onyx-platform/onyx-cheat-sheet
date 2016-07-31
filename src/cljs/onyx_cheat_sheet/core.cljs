@@ -187,12 +187,12 @@
 
 (defn deprecated-version [section k]
   (when-let [deprecated-version (get-in model [section :model k :deprecated-version])]
-    (r/alert {:bs-style "warning"}
+    (r/alert {:bs-style "danger"}
              [(dom/h5 {} "Deprecated Version")
               deprecated-version])))
 
 (defn deprecated-doc [section k]
-  (when-let [deprecation-doc (get-in model [section :model k :deprecated-doc])]
+  (when-let [deprecation-doc (get-in model [section :model k :deprecation-doc])]
     (r/alert {:bs-style "danger"}
              [(dom/h5 {} "Deprecation Doc")
               deprecation-doc])))
