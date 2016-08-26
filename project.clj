@@ -8,8 +8,8 @@
 
   :test-paths ["test/clj"]
 
-  :dependencies [[org.clojure/clojure "1.8.0"]
-                 [org.clojure/clojurescript "1.7.228"]
+  :dependencies [[org.clojure/clojure "1.9.0-alpha11"]
+                 [org.clojure/clojurescript "1.9.225"]
                  [ring "1.3.2"]
                  [ring/ring-defaults "0.1.4"]
                  [secretary "1.2.3"]
@@ -21,10 +21,10 @@
                  [markdown-clj "0.9.77"]
                  [org.omcljs/om "0.9.0"]
                  [racehub/om-bootstrap "0.6.1"]
-                 [fipp "0.6.2"]
+                 [fipp "0.6.6"]
                  [environ "1.0.0"]]
 
-  :plugins [[lein-cljsbuild "1.1.2"]
+  :plugins [[lein-cljsbuild "1.1.4"]
             [lein-environ "1.0.0"]]
 
   :min-lein-version "2.5.0"
@@ -36,24 +36,24 @@
   :cljsbuild {:builds {:app {:source-paths ["src/cljs"]
                              :compiler {:main onyx-cheat-sheet.main
                                         :output-to     "resources/public/js/app.js"
-                                        :asset-path  "public/js/out"
+                                        :asset-path    "js/out"
                                         :output-dir    "resources/public/js/out"
-                                        :source-map    "resources/public/js/app.js.map"
+                                        :source-map    true
                                         :optimizations :none
                                         :pretty-print  true}}}}
 
   :profiles {:dev {:source-paths ["env/dev/clj"]
                    :test-paths ["test/clj"]
 
-                   :dependencies [[figwheel "0.5.0-6"]
-                                  [figwheel-sidecar "0.5.0-6"]
+                   :dependencies [[figwheel "0.5.6"]
+                                  [figwheel-sidecar "0.5.6"]
                                   [com.cemerick/piggieback "0.2.1"]
                                   [weasel "0.7.0"]]
 
                    :repl-options {:init-ns onyx-cheat-sheet.server
                                   :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
 
-                   :plugins [[lein-figwheel "0.5.0-6"]
+                   :plugins [[lein-figwheel "0.5.6"]
                              [lein-pprint "1.1.1"]
                              [lein-set-version "0.4.1"]
                              [lein-update-dependency "0.1.2"]]
@@ -71,7 +71,6 @@
                                                :compiler {:output-to     "resources/public/js/app_test.js"
                                                           :output-dir    "resources/public/js/test"
                                                           :source-map    true
-                                                          :optimizations :whitespace
                                                           :pretty-print  false}}}}}
 
              :uberjar {:source-paths ["env/prod/clj"]

@@ -1,6 +1,6 @@
 (ns onyx-cheat-sheet.server
   (:require [clojure.java.io :as io]
-            [onyx-cheat-sheet.dev :refer [is-dev? inject-devmode-html browser-repl start-figwheel]]
+            [onyx-cheat-sheet.dev :refer [inject-devmode-html browser-repl start-figwheel]]
             [compojure.core :refer [GET defroutes]]
             [compojure.route :refer [resources]]
             [net.cgrand.enlive-html :refer [deftemplate]]
@@ -10,6 +10,8 @@
             [environ.core :refer [env]]
             [ring.adapter.jetty :refer [run-jetty]])
   (:gen-class))
+
+(def is-dev? true)
 
 (deftemplate page (io/resource "index_web.html") []
   [:body] (if is-dev? inject-devmode-html identity))
