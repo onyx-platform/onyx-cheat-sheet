@@ -1,4 +1,4 @@
-(defproject onyx-cheat-sheet "0.9.10.0-SNAPSHOT"
+(defproject onyx-cheat-sheet "0.9.10.0-beta5"
   :description "Cheat sheet for Onyx"
   :url "https://github.com/onyx-platform/onyx-cheat-sheet"
   :license {:name "Eclipse Public License"
@@ -16,7 +16,7 @@
                  [compojure "1.4.0"]
                  [enlive "1.1.6"]
                  ^{:voom {:repo "git@github.com:onyx-platform/onyx.git" :branch "master"}}
-                 [org.onyxplatform/onyx "0.9.10-beta4"]
+                 [org.onyxplatform/onyx "0.9.10-beta5"]
                  [prismatic/om-tools "0.4.0"]
                  [markdown-clj "0.9.77"]
                  [org.omcljs/om "0.9.0"]
