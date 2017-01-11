@@ -261,7 +261,7 @@
                                 {:id "summary" :bs-style "primary" :class "summary-doc" :header (dom/h3 nil (str (model-names section) " Summary"))}
                                 (get-in model [section :summary])
                                 (dom/p {})
-                                (when-let [doc-url (get-in model [section :summary])] 
+                                (when-let [doc-url (get-in model [section :doc-url])] 
                                   (dom/a #js {:href doc-url} "Documentation"))))] 
                            (for [k (model-display-order section)]
                              (dom/div (if (get-in model [section :model k]) #js {} #js {:style #js {:display "none"}})
