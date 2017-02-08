@@ -8,21 +8,21 @@
 
   :test-paths ["test/clj"]
 
-  :dependencies [[org.clojure/clojure "1.9.0-alpha11"]
-                 [org.clojure/clojurescript "1.9.225"]
-                 [ring "1.3.2"]
-                 [ring/ring-defaults "0.1.4"]
+  :dependencies [[org.clojure/clojure "1.9.0-alpha14"]
+                 [org.clojure/clojurescript "1.9.456"]
+                 [ring "1.5.1"]
+                 [ring/ring-defaults "0.2.3"]
                  [secretary "1.2.3"]
-                 [compojure "1.4.0"]
+                 [compojure "1.5.2"]
                  [enlive "1.1.6"]
                  ^{:voom {:repo "git@github.com:onyx-platform/onyx.git" :branch "master"}}
-                 [org.onyxplatform/onyx "0.9.14"]
+                 [org.onyxplatform/onyx "0.9.15"]
                  [prismatic/om-tools "0.4.0"]
-                 [markdown-clj "0.9.77"]
+                 [markdown-clj "0.9.94"]
                  [org.omcljs/om "0.9.0"]
                  [racehub/om-bootstrap "0.6.1"]
-                 [fipp "0.6.6"]
-                 [environ "1.0.0"]]
+                 [fipp "0.6.9"]
+                 [environ "1.1.0"]]
 
   :plugins [[lein-cljsbuild "1.1.4"]
             [lein-environ "1.0.0"]]
@@ -45,8 +45,8 @@
   :profiles {:dev {:source-paths ["env/dev/clj"]
                    :test-paths ["test/clj"]
 
-                   :dependencies [[figwheel "0.5.6"]
-                                  [figwheel-sidecar "0.5.6"]
+                   :dependencies [[figwheel "0.5.9"]
+                                  [figwheel-sidecar "0.5.9"]
                                   [com.cemerick/piggieback "0.2.1"]
                                   [weasel "0.7.0"]]
 
