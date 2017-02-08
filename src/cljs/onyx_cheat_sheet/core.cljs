@@ -18,7 +18,14 @@
 	    [goog.history.EventType :as EventType])
 (:import goog.History))
 
-(def model-names {:catalog-entry "Catalogs"
+(def model-order 
+  [:job :catalog-entry :flow-conditions-entry :lifecycle-entry :lifecycle-calls
+   :window-entry :state-aggregation :trigger-entry :state-event :event-map
+   :peer-config :env-config])
+
+
+(def model-names {:job "Job"
+                  :catalog-entry "Catalogs"
                   :flow-conditions-entry "Flow Conditions"
                   :lifecycle-entry "Lifecycles"
                   :lifecycle-calls "Lifecycle Calls"
@@ -49,6 +56,9 @@
                #(let [element (.getElementById js/document (str namespace "/" name))]
                   (.scrollIntoView element)) 
                200))
+
+(defroute search-route "/search/:search" [search]
+  (swap! app-state assoc :search search))
 
 (let [h (History.)]
   (goog.events/listen h EventType/NAVIGATE #(secretary/dispatch! (.-token %)))
@@ -127,7 +137,7 @@
 
 
 (defn codify [text]
-  (om.dom/div #js  {:dangerouslySetInnerHTML #js {:__html (markdown.core/md->html text)}} nil))
+  (om.dom/div #js {:dangerouslySetInnerHTML #js {:__html (markdown.core/md->html text)}} nil))
 
 (defn allowed-types [section k]
   (let [types (get-in model [section :model k :type])
@@ -141,7 +151,7 @@
     (r/alert {:bs-style "warning"}
              [(dom/h5 {} "Restrictions")
               (for [restriction restrictions]
-                (dom/li {} (codify restriction)))])))
+                (codify restriction))])))
 
 (defn choices [section k]
   (when-let [choices (get-in model [section :model k :choices])]
@@ -176,14 +186,14 @@
     (r/alert {:bs-style "warning"}
              [(dom/h5 {} "Required when")
               (for [c conditions]
-                (dom/li {} (codify c)))])))
+                (codify c))])))
 
 (defn optionally-allowed-when [section k]
   (when-let [conditions (get-in model [section :model k :optionally-allowed-when])]
     (r/alert {:bs-style "success"}
              [(dom/h5 {} "Optionally allowed when")
               (for [c conditions]
-                (dom/li {} (codify c)))])))
+                (codify c))])))
 
 (defn deprecated [section k]
   (when-let [deprecated-version (get-in model [section :model k :deprecated-version])]
@@ -208,12 +218,22 @@
               {:key (name k)
                :id (str (keyword-sanitize-? k))}
               (dom/pre #js {:className "key-header"}
+                       (dom/a #js {:href (str "#" (name section) "/" (keyword-sanitize-? k))}
+                              (dom/i #js {:className "glyphicon glyphicon-link"}))
                        (str k)
                        (if deprecated? 
                          (r/badge {:class "deprecated-badge onyx-badge"} "deprecated"))
                        (requirements section k))
               (deprecated section k)
               (r/well {:class "entry-doc"} (codify (get-in model [section :model k :doc])))
+              (when-let [doc-url (get-in model [section :model k :doc-url])] 
+                (dom/a #js {:href doc-url :target "_blank"} (str "Documentation")))
+              (dom/p {})
+              (when-let [cheat-sheet-url (get-in model [section :model k :cheat-sheet-url])] 
+                (dom/a #js {:href cheat-sheet-url} (str "Parameters")))
+
+
+              (dom/p {})
               (restrictions model section k)
               (dom/p {})
               (required-when section k)
@@ -239,7 +259,10 @@
                      (into [(if-not (empty? (get-in model [section :model])) 
                               (p/panel 
                                 {:id "summary" :bs-style "primary" :class "summary-doc" :header (dom/h3 nil (str (model-names section) " Summary"))}
-                                (get-in model [section :summary])))] 
+                                (get-in model [section :summary])
+                                (dom/p {})
+                                (when-let [doc-url (get-in model [section :summary])] 
+                                  (dom/a #js {:href doc-url} "Documentation"))))] 
                            (for [k (model-display-order section)]
                              (dom/div (if (get-in model [section :model k]) #js {} #js {:style #js {:display "none"}})
                                       (om/build display-feature {:section section :key k}))))))))
@@ -297,7 +320,10 @@
 
 (defn build-nav-item [model k name-str]
   (if-not (empty? (get-in model [k :model]))
-    (n/nav-item {:key (name k) :href (str "#/" (name k)) :on-click #(swap! app-state assoc :view [k] :search "")} name-str)))
+    (n/nav-item {:key (name k) 
+                 :href (str "#/" (name k)) 
+                 :on-click #(swap! app-state assoc :view [k] :search "")} 
+                name-str)))
 
 (defn main []
   (om/root
@@ -310,35 +336,38 @@
                filtered-model (filter-model model search)]
            (g/grid
             {}
-            
-            (g/row
-              {:id "cheat-sheet-block"}
-              (g/col
-                {:xs 18 :md 3}
-                (r/well
-                  {}
-                  (n/nav
-                    {:collapsible? true :stacked? true :bs-style "pills"}
-                    (dom/h4 #js {:className "section-set"} "Sections")
-                    (cons (n/nav-item {:key "all" :href "#/all" :on-click #(swap! app-state assoc :view (keys model))} "All")
-                          (keep (fn [[k name]]
-                                  (build-nav-item filtered-model k name)) 
-                                model-names)))))
+            (g/row {:id "search-bar"}
+                   (g/col {:xs 18 :md 3})
+                   (g/col {:xs 18 :md 6}
+                          (om/build search-input app)))
 
-              (g/col
-                {:xs 18 :md 6}
-                (if view 
-                  (om/build feature-view {:model filtered-model :sections view})
-                  (dom/div
-                    #js {:id "logo-container"}
-                    (dom/img #js {:src "https://raw.githubusercontent.com/onyx-platform/onyx/3bf02e6fafe41315e0302f0f525992eb76eca04e/resources/logo/high-res.png" :className "full-logo"})
-                    (dom/h3 #js {:className "feature-choose"} "<< Choose a feature"))))
-              (g/col {:id "search-bar"}
-                     (g/col {:xs 18 :md 3}
-                            (om/build search-input app)))
-              (if (= 1 (count view)) 
-                (g/col
-                  {:xs 18 :md 3}
-                  (om/build feature-options {:model model :section (first view)})))))))))
+            (g/row
+             {:id "cheat-sheet-block"}
+             (g/col
+              {:xs 18 :md 3}
+              (r/well
+               {}
+               (n/nav
+                {:collapsible? true :stacked? true :bs-style "pills"}
+                (dom/h4 #js {:className "section-set"} "Sections")
+                (cons (n/nav-item {:key "all" :href "#/all" :on-click #(swap! app-state assoc :view (keys model) :search "")} "All")
+                      (keep (fn [k]
+                              (build-nav-item filtered-model k (get model-names k))) 
+                            model-order)))))
+
+             (g/col
+              {:xs 18 :md 6}
+              (if view 
+                (om/build feature-view {:model filtered-model :sections view})
+                (dom/div
+                 #js {:id "logo-container"}
+                 (dom/img #js {:src "https://raw.githubusercontent.com/onyx-platform/onyx/3bf02e6fafe41315e0302f0f525992eb76eca04e/resources/logo/high-res.png" :className "full-logo"})
+                 (dom/h3 #js {:className "feature-choose"} "<< Choose a feature"))))
+
+             (if (and (= 1 (count view))
+                      (:search app))
+               (g/col
+                {:xs 18 :md 3}
+                (om/build feature-options {:model model :section (first view)})))))))))
    app-state
    {:target (. js/document (getElementById "app"))}))
