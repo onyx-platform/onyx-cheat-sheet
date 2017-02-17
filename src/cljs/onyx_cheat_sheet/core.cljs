@@ -219,13 +219,14 @@
                :id (str (keyword-sanitize-? k))}
               (dom/pre #js {:className "key-header"}
                        (dom/a #js {:href (str "#" (name section) "/" (keyword-sanitize-? k))}
-                              (dom/i #js {:className "glyphicon glyphicon-link"}))
+                              (dom/i #js {:className "fa fa-link"}))
                        (str k)
                        (if deprecated? 
                          (r/badge {:class "deprecated-badge onyx-badge"} "deprecated"))
                        (requirements section k))
               (deprecated section k)
-              (r/well {:class "entry-doc"} (codify (get-in model [section :model k :doc])))
+              (when-let [doc (get-in model [section :model k :doc])] 
+                (r/well {:class "entry-doc"} (codify doc)))
               (when-let [doc-url (get-in model [section :model k :doc-url])] 
                 (dom/a #js {:href doc-url :target "_blank"} (str "Documentation")))
               (dom/p {})
@@ -261,7 +262,7 @@
                                 {:id "summary" :bs-style "primary" :class "summary-doc" :header (dom/h3 nil (str (model-names section) " Summary"))}
                                 (get-in model [section :summary])
                                 (dom/p {})
-                                (when-let [doc-url (get-in model [section :summary])] 
+                                (when-let [doc-url (get-in model [section :doc-url])] 
                                   (dom/a #js {:href doc-url} "Documentation"))))] 
                            (for [k (model-display-order section)]
                              (dom/div (if (get-in model [section :model k]) #js {} #js {:style #js {:display "none"}})
