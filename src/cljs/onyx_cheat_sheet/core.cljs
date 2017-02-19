@@ -262,8 +262,7 @@
             :id (str (keyword-sanitize-? k))}
            (dom/pre #js {:className "key-header"}
                     (dom/a #js {:href (str "#" (name section) "/" (keyword-sanitize-? k))}
-                           (dom/i #js {:className "fa fa-link"}))
-                    (str "Phase: " (name k)))
+                           (str "Phase: " (name k))))
            (mapv (fn [task-state]
                    (dom/p #js {} 
                           (g/grid {} 
