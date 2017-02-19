@@ -219,8 +219,7 @@
                :id (str (keyword-sanitize-? k))}
               (dom/pre #js {:className "key-header"}
                        (dom/a #js {:href (str "#" (name section) "/" (keyword-sanitize-? k))}
-                              (dom/i #js {:className "fa fa-link"}))
-                       (str k)
+                              (str k))
                        (if deprecated? 
                          (r/badge {:class "deprecated-badge onyx-badge"} "deprecated"))
                        (requirements section k))
