@@ -19,7 +19,7 @@
 (:import goog.History))
 
 (def model-order 
-  [:job :catalog-entry :flow-conditions-entry :lifecycle-entry :lifecycle-calls
+  [:job :catalog-entry :flow-conditions-entry :lifecycle-entry :lifecycle-calls :task-states
    :window-entry :state-aggregation :trigger-entry :state-event :event-map
    :peer-config :env-config])
 
@@ -29,6 +29,7 @@
                   :flow-conditions-entry "Flow Conditions"
                   :lifecycle-entry "Lifecycles"
                   :lifecycle-calls "Lifecycle Calls"
+                  :task-states "Peer Operation States"
                   :window-entry "Windows"
                   :state-aggregation "State / Aggregation"
                   :trigger-entry "Triggers"
@@ -64,8 +65,7 @@
   (goog.events/listen h EventType/NAVIGATE #(secretary/dispatch! (.-token %)))
   (doto h (.setEnabled true)))
 
-;;; SEARCH CODE ;;;
-;;;
+;;; SEARCH CODE 
 (defn flatten-anything [coll]
   (cond (or (sequential? coll)
             (set? coll))
@@ -219,13 +219,13 @@
                :id (str (keyword-sanitize-? k))}
               (dom/pre #js {:className "key-header"}
                        (dom/a #js {:href (str "#" (name section) "/" (keyword-sanitize-? k))}
-                              (dom/i #js {:className "glyphicon glyphicon-link"}))
-                       (str k)
+                              (str k))
                        (if deprecated? 
                          (r/badge {:class "deprecated-badge onyx-badge"} "deprecated"))
                        (requirements section k))
               (deprecated section k)
-              (r/well {:class "entry-doc"} (codify (get-in model [section :model k :doc])))
+              (when-let [doc (get-in model [section :model k :doc])] 
+                (r/well {:class "entry-doc"} (codify doc)))
               (when-let [doc-url (get-in model [section :model k :doc-url])] 
                 (dom/a #js {:href doc-url :target "_blank"} (str "Documentation")))
               (dom/p {})
@@ -252,20 +252,74 @@
             (added section k)
             (dom/p {})))))
 
+(defn pretty-edn [input]
+  (clojure.string/replace (with-out-str (pprint input {:width 10})) #"\}\n\s\{" "}\n\n {"))
+
+(defcomponent display-phase [{k :key section :section}]
+  (render [_]
+          (p/panel
+           {:key (name k)
+            :id (str (keyword-sanitize-? k))}
+           (dom/pre #js {:className "key-header"}
+                    (dom/a #js {:href (str "#" (name section) "/" (keyword-sanitize-? k))}
+                           (str "Phase: " (name k))))
+           (mapv (fn [task-state]
+                   (dom/p #js {} 
+                          (g/grid {} 
+                                  (g/row {} 
+                                         (g/col {:xs 1 :md 1} (dom/b #js {} "State:"))
+                                         (g/col {:xs 4 :md 4 :className "state-header"} (name (:lifecycle task-state))))
+                                  (g/row {} 
+                                         (g/col {:xs 1 :md 1} (dom/b #js {} "Doc:"))
+                                         (g/col {:xs 4 :md 4} (codify (:doc task-state))))
+                                  (g/row {} 
+                                         (g/col {:xs 1 :md 1} (dom/b #js {} "Types:"))
+                                         (g/col {:xs 4 :md 4} 
+                                                (dom/div #js {} 
+                                                         (for [t (:type task-state)]
+                                                           (r/badge {:class "onyx-badge"} (pr-str t))))))
+                                  (g/row {} 
+                                         (g/col {:xs 1 :md 1} (dom/b #js {} "Blocking?"))
+                                         (g/col {:xs 4 :md 4} (str (:blocking? task-state)))))))
+                 (get-in model [section :model k])))))
+
+(defn render-section [model section]
+  (into [(if-not (empty? (get-in model [section :model])) 
+           (p/panel {:id "summary" 
+                     :bs-style "primary" 
+                     :class "summary-doc" 
+                     :header (dom/h3 nil (str (model-names section) " Summary"))}
+                    (get-in model [section :summary])
+                    (dom/p {})
+                    (when-let [doc-url (get-in model [section :doc-url])] 
+                      (dom/a #js {:href doc-url} "Documentation"))))] 
+        (for [k (model-display-order section)]
+          (dom/div (if (get-in model [section :model k]) #js {} #js {:style #js {:display "none"}})
+                   (om/build display-feature {:section section :key k}))))) 
+
+(defn render-task-states [model section]
+  (into [(if-not (empty? (get-in model [section :model])) 
+           (p/panel {:id "summary" 
+                     :bs-style "primary" 
+                     :class "summary-doc" 
+                     :header (dom/h3 nil (str (model-names section) " Summary"))}
+                    (get-in model [section :summary])
+                    (dom/p {})
+                    (when-let [doc-url (get-in model [section :doc-url])] 
+                      (dom/a #js {:href doc-url} "Documentation"))))] 
+        (for [k (model-display-order section)]
+          (dom/div (if (get-in model [section :model k]) #js {} #js {:style #js {:display "none"}})
+                   (om/build display-phase {:section section :key k}))))
+
+  )
+
 (defcomponent feature-view [{:keys [model sections]} owner]
   (render [_]
           (dom/div {}
                    (for [section sections] 
-                     (into [(if-not (empty? (get-in model [section :model])) 
-                              (p/panel 
-                                {:id "summary" :bs-style "primary" :class "summary-doc" :header (dom/h3 nil (str (model-names section) " Summary"))}
-                                (get-in model [section :summary])
-                                (dom/p {})
-                                (when-let [doc-url (get-in model [section :doc-url])] 
-                                  (dom/a #js {:href doc-url} "Documentation"))))] 
-                           (for [k (model-display-order section)]
-                             (dom/div (if (get-in model [section :model k]) #js {} #js {:style #js {:display "none"}})
-                                      (om/build display-feature {:section section :key k}))))))))
+                     (if (= section :task-states) 
+                       (render-task-states model section)
+                       (render-section model section))))))
 
 (defcomponent feature-options [{:keys [model section]} owner]
   (render [_]
@@ -276,9 +330,6 @@
                [(dom/code #js {:className "code-example"} 
                           (dom/a #js {:href (str "#" (name section) "/" (keyword-sanitize-? k))} (str k)))
                 (dom/p {})])])))
-
-(defn pretty-edn [input]
-  (clojure.string/replace (with-out-str (pprint input {:width 10})) #"\}\n\s\{" "}\n\n {"))
 
 (defn catalog-examples-view []
   (for [k (sort (keys (get examples :catalog-entry)))]
