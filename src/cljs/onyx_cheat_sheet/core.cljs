@@ -415,8 +415,8 @@
                  (dom/img #js {:src "https://raw.githubusercontent.com/onyx-platform/onyx/3bf02e6fafe41315e0302f0f525992eb76eca04e/resources/logo/high-res.png" :className "full-logo"})
                  (dom/h3 #js {:className "feature-choose"} "<< Choose a feature"))))
 
-             (if (and (= 1 (count view))
-                      (:search app))
+             (if (or (= 1 (count view))
+                     (:search app))
                (g/col
                 {:xs 18 :md 3}
                 (om/build feature-options {:model model :section (first view)})))))))))
