@@ -19,12 +19,13 @@
 (:import goog.History))
 
 (def model-order 
-  [:job :catalog-entry :flow-conditions-entry :lifecycle-entry :lifecycle-calls :task-states
-   :window-entry :state-aggregation :trigger-entry :state-event :event-map
+  [:job :catalog-entry :flow-conditions-entry :lifecycle-entry :lifecycle-calls :task-states 
+   :job-config :window-entry :state-aggregation :trigger-entry :state-event :event-map
    :peer-config :env-config])
 
 
 (def model-names {:job "Job"
+                  :job-config "Job Configuration"
                   :catalog-entry "Catalogs"
                   :flow-conditions-entry "Flow Conditions"
                   :lifecycle-entry "Lifecycles"
